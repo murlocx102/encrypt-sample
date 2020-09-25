@@ -59,6 +59,62 @@ func (r RSADecoder) GenKeysToString() (privStr, pubStr string, err error) {
 	return priv, pub, nil
 }
 
+// GenKeysToFile Generate rsa key pair to file.
+// key format PKCS＃8.
+func (r RSADecoder) GenKeysToFile() error {
+	privateKey, err := rsa.GenerateKey(rand.Reader, r.KeyLength)
+	if err != nil {
+		return err
+	}
+
+	x509PrivateKey, err := x509.MarshalPKCS8PrivateKey(privateKey)
+	if err != nil {
+		return err
+	}
+
+    // Current directory
+	fPriv, err := os.Create("privateKey.pem")
+	if err != nil {
+		return err
+	}
+
+	defer fPriv.Close()
+
+	// rsa private key
+	privBlock := &pem.Block{
+		Type:  "PRIVATE KEY",
+		Bytes: x509PrivateKey,
+	}
+
+	if err = pem.Encode(fPriv, privBlock); err != nil {
+		return err
+	}
+
+	publicKey := privateKey.PublicKey
+
+	x509PublicKey, err := x509.MarshalPKIXPublicKey(&publicKey)
+	if err != nil {
+		return err
+	}
+
+	fPub, err := os.Create("publicKey.pem")
+	if err != nil {
+		return err
+	}
+
+	defer fPub.Close()
+
+    // rsa public key
+	pubBlock := &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: x509PublicKey,
+	}
+
+	err = pem.Encode(fPub, pubBlock)
+
+	return err
+}
+
 // SignByPriv rsa private key signature.
 // Use rsa private key string for data signature,return base64 processing result.
 func (r RSADecoder) SignByPriv(privateKey, data string) (result string, err error) {
