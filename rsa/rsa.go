@@ -84,7 +84,7 @@ func (r RSADecoder) SignByPriv(privateKey, data string) (result string, err erro
 	return base64.StdEncoding.EncodeToString(sign), nil
 }
 
-// VerifyByPub rsa public key verification
+// VerifyByPub rsa public key verification.
 // Original signature data is required for verification.
 func (r RSADecoder) VerifyByPub(publicKey, sign, data string) (result bool, err error) {
 	block, _ := pem.Decode([]byte(publicKey))
